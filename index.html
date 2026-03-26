@@ -41,7 +41,7 @@
 <body>
 
 <div class="container">
-    <h2>📊 Projeção Look GO </h2>
+    <h2>📊 Projeção Look GO</h2>
 
     <div class="config-cruz">
         <div>
@@ -55,7 +55,7 @@
                 <option value="4">Soma +4</option>
                 <option value="6">Soma +6</option>
                 <option value="9">Soma +9</option>
-		<option value="12">Soma +12</option>
+                <option value="12">Soma +12</option>
             </select>
         </div>
         <div style="text-align: center;">
@@ -90,12 +90,11 @@
                 <option value="07:20">GO (07:20)</option>
                 <option value="09:20">GO (09:20)</option>
                 <option value="11:20">GO (11:20)</option>
-		<option value="14:20">GO (14:20)</option>
-		<option value="16:20">GO (16:20)</option>
-		<option value="18:20">GO (18:20)</option>
-		<option value="21:20">GO (21:20)</option>
-		<option value="23:20">GO (23:20)</option>
-                
+                <option value="14:20">GO (14:20)</option>
+                <option value="16:20">GO (16:20)</option>
+                <option value="18:20">GO (18:20)</option>
+                <option value="21:20">GO (21:20)</option>
+                <option value="23:20">GO (23:20)</option>
             </select>
             <button class="btn-info" style="flex: 1;" onclick="limparLancamentos()">🧹 Limpar</button>
         </div>
@@ -139,8 +138,13 @@
 const bichosOficiais = ["Avestruz", "Águia", "Burro", "Borboleta", "Cachorro", "Cabra", "Carneiro", "Camelo", "Cobra", "Coelho", "Cavalo", "Elefante", "Galo", "Gato", "Jacaré", "Leão", "Macaco", "Porco", "Pavão", "Peru", "Touro", "Tigre", "Urso", "Veado", "Vaca"];
 const dezenasBichos = {"Avestruz":["01","02","03","04"],"Águia":["05","06","07","08"],"Burro":["09","10","11","12"],"Borboleta":["13","14","15","16"],"Cachorro":["17","18","19","20"],"Cabra":["21","22","23","24"],"Carneiro":["25","26","27","28"],"Camelo":["29","30","31","32"],"Cobra":["33","34","35","36"],"Coelho":["37","38","39","40"],"Cavalo":["41","42","43","44"],"Elefante":["45","46","47","48"],"Galo":["49","50","51","52"],"Gato":["53","54","55","56"],"Jacaré":["57","58","59","60"],"Leão":["61","62","63","64"],"Macaco":["65","66","67","68"],"Porco":["69","70","71","72"],"Pavão":["73","74","75","76"],"Peru":["77","78","79","80"],"Touro":["81","82","83","84"],"Tigre":["85","86","87","88"],"Urso":["89","90","91","92"],"Veado":["93","94","95","96"],"Vaca":["97","98","99","00"]};
 
-let dadosApp = { 07:20: [], 09:20: [], 11:20: [], 14:20: [], 16:20: [], 18:20: [], 21:20: [], 23:20: [],  extrator: { hoje: [], ontem: [], nomesAtrasados: [], listaCompleta: [] } };
-const listaHorarios = ["07:20", "09:20", "11:20", "14:20", "16:20", "18:20", "21:20", "23:20",];
+// CORREÇÃO: Chaves do objeto entre aspas
+let dadosApp = { 
+    "07:20": [], "09:20": [], "11:20": [], "14:20": [], "16:20": [], "18:20": [], "21:20": [], "23:20": [], 
+    extrator: { hoje: [], ontem: [], nomesAtrasados: [], listaCompleta: [] } 
+};
+
+const listaHorarios = ["07:20", "09:20", "11:20", "14:20", "16:20", "18:20", "21:20", "23:20"];
 
 const limparTexto = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
@@ -155,11 +159,14 @@ function lancarManual() {
     const seletor = document.getElementById('horarioSeletor');
     const texto = document.getElementById('entradaManual').value;
     const milhares = texto.match(/\d{4}/g);
-    if (!milhares) return alert("Cole as milhares.");
+    if (!milhares) return alert("Cole as milhares (4 dígitos).");
+    
     dadosApp[seletor.value] = milhares.slice(0, 7);
     document.getElementById('entradaManual').value = '';
+    
     const prox = listaHorarios.indexOf(seletor.value) + 1;
     if (prox < listaHorarios.length) seletor.value = listaHorarios[prox];
+    
     atualizarTudo();
 }
 
@@ -167,14 +174,20 @@ function extrairLista() {
     const texto = document.getElementById('entradaLista').value;
     if (!texto) return alert("Cole a lista primeiro.");
     dadosApp.extrator = { hoje: [], ontem: [], nomesAtrasados: [], listaCompleta: [] };
+    
     texto.split('\n').forEach(linha => {
         const ln = limparTexto(linha);
         bichosOficiais.forEach(b => {
             if (ln.includes(limparTexto(b))) {
-                if (ln.includes("hoje")) { if(!dadosApp.extrator.hoje.includes(b)) dadosApp.extrator.hoje.push(b); }
-                else if (ln.includes("ontem")) { if(!dadosApp.extrator.ontem.includes(b)) dadosApp.extrator.ontem.push(b); }
+                if (ln.includes("hoje")) { 
+                    if(!dadosApp.extrator.hoje.includes(b)) dadosApp.extrator.hoje.push(b); 
+                }
+                else if (ln.includes("ontem")) { 
+                    if(!dadosApp.extrator.ontem.includes(b)) dadosApp.extrator.ontem.push(b); 
+                }
                 else if (ln.includes("atrasado") || ln.includes("dia")) {
-                    let d = (linha.match(/(\d+)\s*(dia|atrasado)/i) || ["", "??"])[1];
+                    let dMatch = linha.match(/(\d+)\s*(dia|atrasado)/i);
+                    let d = dMatch ? dMatch[1] : "??";
                     if(!dadosApp.extrator.nomesAtrasados.includes(b)){
                         dadosApp.extrator.nomesAtrasados.push(b);
                         dadosApp.extrator.listaCompleta.push(`${b}(${d}d)`);
@@ -191,12 +204,14 @@ function atualizarTudo() {
     const painel = document.getElementById('painelResultados');
     painel.innerHTML = '';
     listaHorarios.forEach(h => {
-        let res = dadosApp[h].length ? dadosApp[h].join('<br>') : "---";
+        let res = (dadosApp[h] && dadosApp[h].length) ? dadosApp[h].join('<br>') : "---";
         painel.innerHTML += `<div class="card-horario"><strong>${h}</strong><br>${res}</div>`;
     });
+    
     document.getElementById('resHoje').innerHTML = dadosApp.extrator.hoje.join(', ') || "-";
     document.getElementById('resOntem').innerHTML = dadosApp.extrator.ontem.join(', ') || "-";
     document.getElementById('resAtrasados').innerHTML = dadosApp.extrator.listaCompleta.slice(0, 5).join(' | ') || "-";
+    
     gerarProjecaoCinco();
     localStorage.setItem('rioApp_Projecao', JSON.stringify(dadosApp));
 }
@@ -210,8 +225,9 @@ function gerarProjecaoCinco() {
     let cruzBruta = [];
     if(dataInput){
         const dia = parseInt(dataInput.split('-')[2]);
-        const n = [(dia+soma)%10, (dia+soma*2)%10, (dia+soma*3)%10, (dia+soma*4)%10].map(String);
+        const n = [(dia+soma)%10, (dia+(soma*2))%10, (dia+(soma*3))%10, (dia+(soma*4))%10].map(String);
         document.getElementById('txtCruz').innerText = n.join(' - ');
+        
         n.forEach(n1 => n.forEach(n2 => { 
             if(n1 !== n2) { 
                 let b = getBicho("00" + n1 + n2); 
@@ -228,43 +244,72 @@ function gerarProjecaoCinco() {
         container.style.display = "block";
         document.getElementById('listaProjetada').innerHTML = final.map(g => `<div class="grupo-badge">${g}${cruzLimpa.includes(g)?'<span class="selo-cruz">CRUZ</span>':''}</div>`).join('');
         
-        // Milhares
         document.getElementById('listaSugestoes').innerHTML = final.map(g => {
             let d = dezenasBichos[g][Math.floor(Math.random()*4)];
             return `<div class="item-aposta"><b>${g}:</b> ${Math.floor(Math.random()*10)}${Math.floor(Math.random()*10)}${d}</div>`;
         }).join('');
 
-        // Duques (Pares)
         let duques = [];
         for(let i=0; i<final.length; i+=2) if(final[i+1]) duques.push(`${final[i]} / ${final[i+1]}`);
         document.getElementById('listaDuques').innerHTML = duques.map(d => `• ${d}<br>`).join('');
 
-        // Ternos (Trios)
         let ternos = [];
         if(final.length >=3) ternos.push(`${final[0]} / ${final[1]} / ${final[2]}`);
         if(final.length >=6) ternos.push(`${final[3]} / ${final[4]} / ${final[5]}`);
         document.getElementById('listaTernos').innerHTML = ternos.map(t => `• ${t}<br>`).join('');
         
-    } else { container.style.display = "none"; }
+    } else { 
+        container.style.display = "none"; 
+    }
 }
 
-function limparLancamentos() { if(confirm("Limpar hoje?")) { listaHorarios.forEach(h => dadosApp[h] = []); atualizarTudo(); } }
-function limparTudo() { if(confirm("Resetar TUDO?")) { localStorage.removeItem('rioApp_Projecao'); location.reload(); } }
+function limparLancamentos() { 
+    if(confirm("Limpar lançamentos de hoje?")) { 
+        listaHorarios.forEach(h => dadosApp[h] = []); 
+        atualizarTudo(); 
+    } 
+}
+
+function limparTudo() { 
+    if(confirm("Resetar TUDO? Isso apagará o banco de dados local.")) { 
+        localStorage.removeItem('rioApp_Projecao'); 
+        location.reload(); 
+    } 
+}
+
 function fazerBackup() { 
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(dadosApp)], {type: "application/json"}));
-    a.download = `rio_backup.json`; a.click(); 
+    a.download = `rio_backup.json`; 
+    a.click(); 
 }
+
 function importarBackup(e) {
     const reader = new FileReader();
-    reader.onload = (ev) => { dadosApp = JSON.parse(ev.target.result); atualizarTudo(); alert("Ok!"); };
+    reader.onload = (ev) => { 
+        try {
+            dadosApp = JSON.parse(ev.target.result); 
+            atualizarTudo(); 
+            alert("Backup Restaurado!"); 
+        } catch(err) {
+            alert("Erro ao ler arquivo.");
+        }
+    };
     reader.readAsText(e.target.files[0]);
 }
 
 window.onload = () => { 
     document.getElementById('dataCruz').valueAsDate = new Date(); 
     const salvo = localStorage.getItem('rioApp_Projecao'); 
-    if (salvo) dadosApp = JSON.parse(salvo); 
+    if (salvo) {
+        try {
+            const parsed = JSON.parse(salvo);
+            // Mescla o salvo com a estrutura inicial para evitar erros de chaves faltando
+            dadosApp = {...dadosApp, ...parsed};
+        } catch(e) {
+            console.error("Erro ao carregar dados salvos");
+        }
+    }
     atualizarTudo(); 
 };
 </script>
