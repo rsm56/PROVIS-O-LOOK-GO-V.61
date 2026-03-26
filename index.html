@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Rio Pro - Cruz Custom & Grupos</title>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background:#f0f2f5; padding:10px; color: #333; margin:0; }
+        .container { max-width: 850px; margin: auto; }
+        .box { background:white; padding:15px; margin-bottom:15px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08);} 
+        h2, h3 { text-align:center; color: #1a73e8; margin-top: 0; }
+        
+        textarea { width:100%; height:70px; margin-top: 8px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; box-sizing: border-box; font-size: 14px; resize: none; }
+        select, button { padding:12px; margin: 5px 0; cursor:pointer; border-radius: 8px; font-weight: bold; width: 100%; border: none; font-size: 15px; transition: 0.3s; }
+        
+        .btn-primary { background: #1a73e8; color: white; }
+        .btn-success { background: #34a853; color: white; }
+        .btn-danger { background: #ea4335; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        
+        .painel-projecao { background: linear-gradient(135deg, #2c3e50, #2980b9); color: #fff; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
+        .grupos-lista { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top:10px; }
+        .grupo-badge { background: white; color: #2980b9; padding: 8px 12px; border-radius: 50px; font-size: 1em; font-weight: 900; min-width: 80px; box-shadow: 0 4px 0px #bdc3c7; position: relative; }
+        
+        .config-cruz { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #eef2f7; padding: 15px; border-radius: 10px; margin-bottom: 15px; align-items: center; }
+        .selo-cruz { position: absolute; top: -8px; right: -5px; background: #e74c3c; color: white; font-size: 0.6em; padding: 2px 5px; border-radius: 4px; border: 1px solid white; }
+        
+        .combinacoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; text-align: left; }
+        .card-combo { background: rgba(255,255,255,0.15); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); }
+        .combo-titulo { font-size: 0.8em; font-weight: bold; color: #f1c40f; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        .grade-horarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+        .card-horario { background: #fff; border: 1px solid #eee; padding: 10px; border-top: 4px solid #1a73e8; border-radius: 8px; text-align: center; font-size: 0.8em; }
+        
+        .monitor-box { padding: 6px; border-radius: 6px; text-align: center; color: white; font-weight: bold; font-size: 0.85em; }
+        .cor-hoje { background: #27ae60; } .cor-ontem { background: #2980b9; } .cor-atrasado { background: #e67e22; }
+        #inputArquivo { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📊 Projeção Look GO </h2>
+
+    <div class="config-cruz">
+        <div>
+            <label style="font-size: 0.8em; font-weight: bold;">📅 DATA:</label>
+            <input type="date" id="dataCruz" onchange="atualizarTudo()" style="width:90%; padding:8px; border-radius:5px; border:1px solid #ccc;">
+        </div>
+        <div>
+            <label style="font-size: 0.8em; font-weight: bold;">➕ SOMA DA CRUZ:</label>
+            <select id="somaSeletor" onchange="atualizarTudo()">
+                <option value="3">Soma +3</option>
+                <option value="4">Soma +4</option>
+                <option value="6">Soma +6</option>
+                <option value="9">Soma +9</option>
+            </select>
+        </div>
+        <div style="text-align: center;">
+            <div id="txtCruz" style="color:#1a73e8; font-size: 1.2em; font-weight: 900; margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <div id="painelProjecao" class="painel-projecao" style="display:none;">
+        <span style="font-weight:bold; text-transform:uppercase; font-size:0.8em;">🎯 PALPITES FILTRADOS</span>
+        <div class="grupos-lista" id="listaProjetada"></div>
+        
+        <div class="combinacoes">
+            <div class="card-combo">
+                <div class="combo-titulo">💎 Duques de Grupo</div>
+                <div id="listaDuques" style="font-size: 0.9em; line-height: 1.4;"></div>
+            </div>
+            <div class="card-combo">
+                <div class="combo-titulo">🏆 Ternos de Grupo</div>
+                <div id="listaTernos" style="font-size: 0.9em; line-height: 1.4;"></div>
+            </div>
+        </div>
+
+        <div id="campoApostasCruz" style="margin-top: 15px; text-align: left; font-size: 0.85em; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 10px;">
+            <div style="color: #f1c40f; font-weight: bold; margin-bottom: 5px;">🎰 MILHARES SUGERIDAS:</div>
+            <div id="listaSugestoes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;"></div>
+        </div>
+    </div>
+
+    <div class="box">
+        <div style="display: flex; gap: 10px;">
+            <select id="horarioSeletor" style="flex: 2;">
+                <option value="PPT">PPT (09:20)</option>
+                <option value="PTM">PTM (11:20)</option>
+                <option value="PT">PT (14:20)</option>
+                <option value="PTV">PTV (16:20)</option>
+                <option value="PTN">PTN (18:20)</option>
+                <option value="CORUJA">CORUJA (21:20)</option>
+            </select>
+            <button class="btn-info" style="flex: 1;" onclick="limparLancamentos()">🧹 Limpar</button>
+        </div>
+        <textarea id="entradaManual" placeholder="Cole as milhares do horário..."></textarea>
+        <button class="btn-primary" onclick="lancarManual()">Gravar e Pular Horário ➔</button>
+    </div>
+
+    <div class="box">
+        <textarea id="entradaLista" placeholder="Cole a lista de atrasados aqui..."></textarea>
+        <button class="btn-primary" style="background: #6c5ce7;" onclick="extrairLista()">Atualizar Atrasados e Cruzar</button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+        <div class="box" style="margin:0; padding:10px;">
+            <div class="monitor-box cor-hoje">HOJE</div>
+            <div id="resHoje" class="lista-txt" style="font-size:0.75em; text-align:center;">-</div>
+        </div>
+        <div class="box" style="margin:0; padding:10px;">
+            <div class="monitor-box cor-ontem">ONTEM</div>
+            <div id="resOntem" class="lista-txt" style="font-size:0.75em; text-align:center;">-</div>
+        </div>
+        <div class="box" style="margin:0; padding:10px;">
+            <div class="monitor-box cor-atrasado">ATRASADOS</div>
+            <div id="resAtrasados" class="lista-txt" style="font-size:0.75em; text-align:center;">-</div>
+        </div>
+    </div>
+
+    <div class="box">
+        <div class="grade-horarios" id="painelResultados"></div>
+    </div>
+
+    <div style="display: flex; gap: 5px;">
+        <button class="btn-success" style="font-size:12px;" onclick="fazerBackup()">💾 Backup</button>
+        <button class="btn-warning" style="font-size:12px;" onclick="document.getElementById('inputArquivo').click()">📂 Restaurar</button>
+        <button class="btn-danger" style="font-size:12px;" onclick="limparTudo()">🗑️ Reset</button>
+        <input type="file" id="inputArquivo" accept=".json" onchange="importarBackup(event)">
+    </div>
+</div>
+
+<script>
+const bichosOficiais = ["Avestruz", "Águia", "Burro", "Borboleta", "Cachorro", "Cabra", "Carneiro", "Camelo", "Cobra", "Coelho", "Cavalo", "Elefante", "Galo", "Gato", "Jacaré", "Leão", "Macaco", "Porco", "Pavão", "Peru", "Touro", "Tigre", "Urso", "Veado", "Vaca"];
+const dezenasBichos = {"Avestruz":["01","02","03","04"],"Águia":["05","06","07","08"],"Burro":["09","10","11","12"],"Borboleta":["13","14","15","16"],"Cachorro":["17","18","19","20"],"Cabra":["21","22","23","24"],"Carneiro":["25","26","27","28"],"Camelo":["29","30","31","32"],"Cobra":["33","34","35","36"],"Coelho":["37","38","39","40"],"Cavalo":["41","42","43","44"],"Elefante":["45","46","47","48"],"Galo":["49","50","51","52"],"Gato":["53","54","55","56"],"Jacaré":["57","58","59","60"],"Leão":["61","62","63","64"],"Macaco":["65","66","67","68"],"Porco":["69","70","71","72"],"Pavão":["73","74","75","76"],"Peru":["77","78","79","80"],"Touro":["81","82","83","84"],"Tigre":["85","86","87","88"],"Urso":["89","90","91","92"],"Veado":["93","94","95","96"],"Vaca":["97","98","99","00"]};
+
+let dadosApp = { 07:20: [], 09:20: [], 11:20: [], 14:20: [], 16:20: [], 18:20: [], 21:20: [], 23:20: [],  extrator: { hoje: [], ontem: [], nomesAtrasados: [], listaCompleta: [] } };
+const listaHorarios = ["07:20", "09:20", "11:20", "14:20", "16:20", "18:20", "21:20", "23:20",];
+
+const limparTexto = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+function getBicho(milhar) {
+    let dezena = parseInt(milhar.slice(-2));
+    if (isNaN(dezena)) return "";
+    if (dezena === 0) dezena = 100;
+    return bichosOficiais[Math.ceil(dezena / 4) - 1] || "";
+}
+
+function lancarManual() {
+    const seletor = document.getElementById('horarioSeletor');
+    const texto = document.getElementById('entradaManual').value;
+    const milhares = texto.match(/\d{4}/g);
+    if (!milhares) return alert("Cole as milhares.");
+    dadosApp[seletor.value] = milhares.slice(0, 7);
+    document.getElementById('entradaManual').value = '';
+    const prox = listaHorarios.indexOf(seletor.value) + 1;
+    if (prox < listaHorarios.length) seletor.value = listaHorarios[prox];
+    atualizarTudo();
+}
+
+function extrairLista() {
+    const texto = document.getElementById('entradaLista').value;
+    if (!texto) return alert("Cole a lista primeiro.");
+    dadosApp.extrator = { hoje: [], ontem: [], nomesAtrasados: [], listaCompleta: [] };
+    texto.split('\n').forEach(linha => {
+        const ln = limparTexto(linha);
+        bichosOficiais.forEach(b => {
+            if (ln.includes(limparTexto(b))) {
+                if (ln.includes("hoje")) { if(!dadosApp.extrator.hoje.includes(b)) dadosApp.extrator.hoje.push(b); }
+                else if (ln.includes("ontem")) { if(!dadosApp.extrator.ontem.includes(b)) dadosApp.extrator.ontem.push(b); }
+                else if (ln.includes("atrasado") || ln.includes("dia")) {
+                    let d = (linha.match(/(\d+)\s*(dia|atrasado)/i) || ["", "??"])[1];
+                    if(!dadosApp.extrator.nomesAtrasados.includes(b)){
+                        dadosApp.extrator.nomesAtrasados.push(b);
+                        dadosApp.extrator.listaCompleta.push(`${b}(${d}d)`);
+                    }
+                }
+            }
+        });
+    });
+    document.getElementById('entradaLista').value = '';
+    atualizarTudo();
+}
+
+function atualizarTudo() {
+    const painel = document.getElementById('painelResultados');
+    painel.innerHTML = '';
+    listaHorarios.forEach(h => {
+        let res = dadosApp[h].length ? dadosApp[h].join('<br>') : "---";
+        painel.innerHTML += `<div class="card-horario"><strong>${h}</strong><br>${res}</div>`;
+    });
+    document.getElementById('resHoje').innerHTML = dadosApp.extrator.hoje.join(', ') || "-";
+    document.getElementById('resOntem').innerHTML = dadosApp.extrator.ontem.join(', ') || "-";
+    document.getElementById('resAtrasados').innerHTML = dadosApp.extrator.listaCompleta.slice(0, 5).join(' | ') || "-";
+    gerarProjecaoCinco();
+    localStorage.setItem('rioApp_Projecao', JSON.stringify(dadosApp));
+}
+
+function gerarProjecaoCinco() {
+    const container = document.getElementById('painelProjecao');
+    const dataInput = document.getElementById('dataCruz').value;
+    const soma = parseInt(document.getElementById('somaSeletor').value);
+    const bloqueados = [...dadosApp.extrator.hoje, ...dadosApp.extrator.ontem];
+    
+    let cruzBruta = [];
+    if(dataInput){
+        const dia = parseInt(dataInput.split('-')[2]);
+        const n = [(dia+soma)%10, (dia+soma*2)%10, (dia+soma*3)%10, (dia+soma*4)%10].map(String);
+        document.getElementById('txtCruz').innerText = n.join(' - ');
+        n.forEach(n1 => n.forEach(n2 => { 
+            if(n1 !== n2) { 
+                let b = getBicho("00" + n1 + n2); 
+                if(b && !cruzBruta.includes(b)) cruzBruta.push(b); 
+            } 
+        }));
+    }
+
+    let cruzLimpa = cruzBruta.filter(b => !bloqueados.includes(b)).slice(0, 4);
+    let atrasadosLimpos = dadosApp.extrator.nomesAtrasados.filter(b => !bloqueados.includes(b) && !cruzLimpa.includes(b)).slice(0, 4);
+    let final = [...cruzLimpa, ...atrasadosLimpos].slice(0, 8);
+
+    if (final.length > 0) {
+        container.style.display = "block";
+        document.getElementById('listaProjetada').innerHTML = final.map(g => `<div class="grupo-badge">${g}${cruzLimpa.includes(g)?'<span class="selo-cruz">CRUZ</span>':''}</div>`).join('');
+        
+        // Milhares
+        document.getElementById('listaSugestoes').innerHTML = final.map(g => {
+            let d = dezenasBichos[g][Math.floor(Math.random()*4)];
+            return `<div class="item-aposta"><b>${g}:</b> ${Math.floor(Math.random()*10)}${Math.floor(Math.random()*10)}${d}</div>`;
+        }).join('');
+
+        // Duques (Pares)
+        let duques = [];
+        for(let i=0; i<final.length; i+=2) if(final[i+1]) duques.push(`${final[i]} / ${final[i+1]}`);
+        document.getElementById('listaDuques').innerHTML = duques.map(d => `• ${d}<br>`).join('');
+
+        // Ternos (Trios)
+        let ternos = [];
+        if(final.length >=3) ternos.push(`${final[0]} / ${final[1]} / ${final[2]}`);
+        if(final.length >=6) ternos.push(`${final[3]} / ${final[4]} / ${final[5]}`);
+        document.getElementById('listaTernos').innerHTML = ternos.map(t => `• ${t}<br>`).join('');
+        
+    } else { container.style.display = "none"; }
+}
+
+function limparLancamentos() { if(confirm("Limpar hoje?")) { listaHorarios.forEach(h => dadosApp[h] = []); atualizarTudo(); } }
+function limparTudo() { if(confirm("Resetar TUDO?")) { localStorage.removeItem('rioApp_Projecao'); location.reload(); } }
+function fazerBackup() { 
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(dadosApp)], {type: "application/json"}));
+    a.download = `rio_backup.json`; a.click(); 
+}
+function importarBackup(e) {
+    const reader = new FileReader();
+    reader.onload = (ev) => { dadosApp = JSON.parse(ev.target.result); atualizarTudo(); alert("Ok!"); };
+    reader.readAsText(e.target.files[0]);
+}
+
+window.onload = () => { 
+    document.getElementById('dataCruz').valueAsDate = new Date(); 
+    const salvo = localStorage.getItem('rioApp_Projecao'); 
+    if (salvo) dadosApp = JSON.parse(salvo); 
+    atualizarTudo(); 
+};
+</script>
+</body>
+</html>
